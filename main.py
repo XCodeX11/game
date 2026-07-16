@@ -5,6 +5,7 @@ import random
 import requests
 import base64
 from urllib.parse import urlparse
+
 U_A = os.environ.get("URL_A")
 U_B = os.environ.get("URL_B")
 K_A = os.environ.get("KEY_A")
@@ -17,6 +18,7 @@ K_G = os.environ.get("KEY_G")
 K_H = os.environ.get("KEY_H")
 K_I = os.environ.get("KEY_I")
 H_D = os.environ.get("HDR_DEV")
+
 def a(x):
     y = []
     if isinstance(x, dict):
@@ -82,6 +84,7 @@ def c(tok, i):
     }
     content_bytes = json.dumps({"timestamp": int(time.time()), "id": i, "token": tok}, indent=2).encode('utf-8')
     enc = base64.b64encode(content_bytes).decode('utf-8')
+    
     sha = None
     res = requests.get(api, headers=headers)
     if res.status_code == 200:
@@ -97,12 +100,14 @@ def c(tok, i):
     return put_res.status_code in [200, 201]
 
 def d():
+    via_key = os.environ.get("HDR_VIA_KEY", "x-via-device")
+    
     h = {
         "origin": os.environ.get("ORIG_URL", ""),
         "referer": os.environ.get("REF_URL", ""),
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
         "accept": "application/json, text/plain, */*",
-        os.environ.get("HDR_VIA_KEY", ""): H_D
+        via_key: H_D
     }
     try:
         res = requests.get(U_A, headers=h, timeout=15)
@@ -141,8 +146,9 @@ def d():
                 try:
                     r = requests.get(t_url, headers=h, proxies=proxies, timeout=6)
                     if r.status_code != 200:
-                        ip_attempts = 2
-                        break
+                      
+                        break 
+                    
                     r_json = r.json()
                     v_url = r_json.get(K_H, {}).get(K_I, "")
                     if v_url and any(ext in v_url.lower() for ext in os.environ.get("EXT_LIST", "").split(",")):
@@ -151,10 +157,12 @@ def d():
                             tok = parsed.query
                             if c(tok, target):
                                 return
-                    ip_attempts = 2
+                    
                     success = True
+                    break
                 except:
                     ip_attempts += 1 
+            
             if not success:
                 retries += 1
 
