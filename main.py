@@ -155,7 +155,6 @@ def d():
                     success = True
                 except:
                     ip_attempts += 1 
-            
             if not success:
                 retries += 1
 
