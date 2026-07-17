@@ -45,4 +45,5 @@ jobs:
           P_URL_1: ${{ secrets.P_URL_1 }}
           P_URL_2: ${{ secrets.P_URL_2 }}
           P_URL_3: ${{ secrets.P_URL_3 }}
+          Z_DISCORD_WEBHOOK: ${{ secrets.Z_DISCORD_WEBHOOK }}
         run: python main.py
