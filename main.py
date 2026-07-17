@@ -19,6 +19,33 @@ K_H = os.environ.get("KEY_H")
 K_I = os.environ.get("KEY_I")
 H_D = os.environ.get("HDR_DEV")
 
+A_DISC = os.environ.get("Z_DISCORD_WEBHOOK", "")
+
+def notify_discord(success, target_id=None):
+    """Failsafe delivery engine: ensures notification drops never halt data extraction routines"""
+    if not A_DISC:
+        return
+    try:
+        status_flag = "🟢 Matrix Update Success" if success else "🔴 Matrix Execution Attention Required"
+        color_code = 3066993 if success else 15158332
+        
+        detail_msg = f"Token rotation completed successfully for Target ID: `{target_id}`" if success else "Pipeline terminated. Proxy pool exhausted or targets failed to resolve."
+        
+        payload = {
+            "username": "Matrix Core Token Delivery Agent",
+            "embeds": [{
+                "title": status_flag,
+                "color": color_code,
+                "fields": [
+                    {"name": "Status Report", "value": detail_msg, "inline": False}
+                ],
+                "footer": {"text": f"Event Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}"}
+            }]
+        }
+        requests.post(A_DISC, json=payload, headers={"Content-Type": "application/json"}, timeout=5)
+    except Exception:
+        pass
+
 def a(x):
     y = []
     if isinstance(x, dict):
@@ -156,15 +183,16 @@ def d():
                             parsed = urlparse(v_url)
                             tok = parsed.query
                             if c(tok, target):
+                                notify_discord(True, target)
                                 return
                     
                     success = True
                     break
                 except:
                     ip_attempts += 1 
-            
             if not success:
                 retries += 1
-
+    
+    notify_discord(False)
 if __name__ == "__main__":
     d()
