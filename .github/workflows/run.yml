@@ -8,6 +8,8 @@ on:
 jobs:
   execute-process:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Public Code
         uses: actions/checkout@v4
